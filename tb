@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+#
+# I wrote this because I had some Apache web servers bombing out after printing
+# a certain error in their error_log.
+# This allowed me to watch for the error and restart Apache before Nagios would
+# catch it at 3am and wake my ass up.
+#
+# Honestly, this probably won't work for you. It looks for mod_passenger
+# errors.
+#
+
+require 'time'
+
+watchfor = ARGV[0]
+time = ARGV[1]
+unit = ARGV[2]
+
+def usage
+	return "Usage: tb [string to watch for] [time] [hour(s)|minute(s)] < /path/to/file"
+end
+
+if watchfor.nil?
+	puts usage
+	exit 1
+end
+
+if unit =~ /hour/
+	mult = 60*60
+elsif unit =~ /minute/
+	mult = 60
+else
+	puts usage
+	exit 1
+end
+
+timefrom = Time.now - (time.to_i * mult)
+
+prevline = prevline2 = logdate = nil
+
+STDIN.each do |line|
+	line.chomp!
+	if line =~ /#{ARGV[0]}/
+		unless logdate.nil?
+			if logdate.to_i >= timefrom.to_i
+				puts "BOOM! (#{prevline2})"
+				exit 2
+			end
+		end
+	end
+
+	if line.match(/^\[((Sun|Mon|Tue|Wed|Thu|Fri|Sat).*?)\] .*$/)
+		logdate = Time.parse($1)
+	end
+
+	prevline2 = prevline
+	prevline = line
+end
+
+exit 0

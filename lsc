@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Given a port, print the number of connections grouped by state.
+
+for i in `echo $*`
+do
+	echo "+----- $i -----+"
+
+	if [ `uname -s` == "Darwin" ]
+	then
+		netstat -tn | egrep "^tcp.*.$1" | tr -s " " | cut -f6 -d " " | \
+			sort | uniq -c
+	else
+		netstat -tn | egrep "^tcp.*:$1" | tr -s " " | cut -f6 -d " " | \
+			sort | uniq -c
+	fi
+done

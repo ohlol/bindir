@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Pretty simple stuff - continuously ping a host until it's up!
+#
+# Uses the tailfgrep script.
+#
+# I did not write this.
+
+if [ $# -lt 1 ]; then
+	echo "Usage: $0 <host>"
+	exit 1
+fi
+
+host="$1"
+shift
+
+case "$OSTYPE" in
+	solaris*) ping -s "$host" | tailfgrep -q 'bytes from'
+		;;
+
+	# FreeBSD and Linux
+	*) ping "$host" | tailfgrep -q 'bytes from'
+		;;
+esac

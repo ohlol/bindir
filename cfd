@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Prints number of open file descriptors for a given pid.
+
+PID=$1
+
+if [ "x$1" = "x" ]
+then
+	echo "What pid?"
+	exit 2
+fi
+
+lsof -p $1 | wc -l
